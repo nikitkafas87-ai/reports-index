@@ -1,0 +1,50 @@
+﻿<!doctype html>
+<html lang="ru"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>OSAGO crosses report</title>
+<style>body{font:14px Arial,sans-serif;margin:24px;background:#f6f7f9;color:#1f2937}main{max-width:1400px;margin:auto}h1{margin-bottom:6px}.note{color:#667085;margin-bottom:18px}.cards{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0}.card{background:white;border:1px solid #d0d5dd;border-radius:6px;padding:12px 14px}.card b{display:block;font-size:22px;margin-top:4px}table{width:100%;border-collapse:collapse;background:white;border:1px solid #d0d5dd}th,td{border-bottom:1px solid #eaecf0;padding:8px 10px;text-align:left}th{background:#f8fafc}.apikey{font-family:Consolas,monospace;white-space:nowrap}.warn{background:#fff7ed;border:1px solid #fed7aa;border-radius:6px;padding:10px;margin:14px 0}</style></head>
+<body><main>
+<h1>Отчет по кроссам ОСАГО</h1>
+<div class="note">InsappCoreProd, активные партнеры + активные ОСАГО-ключи. Построено по полной матрице ожидаемых кроссов; отсутствие строки СК или кросса считается выключением.</div>
+<div class="cards">
+<div class="card">Активных ОСАГО-ключей<b>188</b></div>
+<div class="card">Строк матрицы<b>4456</b></div>
+<div class="card">Эффективно включенных кроссов<b>1272</b></div>
+<div class="card">Ключей с включенными кроссами<b>164</b></div>
+<div class="card">Ключей без включенных кроссов<b>24</b></div>
+</div>
+<h2>Причины выключения по строкам матрицы</h2>
+<table><thead><tr><th>Причина</th><th>Количество строк</th></tr></thead><tbody>
+<tr><td>СК не подключена: нет строки PartnerInsurerSettings</td><td>745</td></tr>
+<tr><td>СК отключена: PartnerInsurerSettings.IsDisabled = 1</td><td>116</td></tr>
+<tr><td>Кроссы отключены на уровне СК: PartnerInsurerSettings.UpsalesDisabled = 1</td><td>123</td></tr>
+<tr><td>Кросс отключен: нет строки PartnerInsurerUpsaleSettings</td><td>113</td></tr>
+<tr><td>Кросс отключен: PartnerInsurerUpsaleSettings.IsDisabled = 1</td><td>2247</td></tr>
+</tbody></table>
+<div class="warn">Детальный Excel из DB MCP был сформирован в temp MCP-сервера, но этот файл недоступен локальной файловой системе Codex. Поэтому локальный HTML содержит live-сводку и таблицу ключей без эффективно включенных кроссов.</div>
+<h2>ApiKey без эффективно включенных кроссов</h2>
+<table><thead><tr><th>ApiKey</th><th>Всего строк</th><th>СК не подключена</th><th>СК отключена</th><th>Кроссы отключены на СК</th><th>Нет строки кросса</th><th>Кросс выключен</th></tr></thead><tbody>
+<tr><td class="apikey">07b2d612fa3f45baae771e8223618e38</td><td>17</td><td>0</td><td>13</td><td>0</td><td>17</td><td>0</td></tr>
+<tr><td class="apikey">19632a60225e42f29c238a93d05c8e77</td><td>17</td><td>4</td><td>3</td><td>7</td><td>12</td><td>1</td></tr>
+<tr><td class="apikey">304f92eb0cce45f69373df9f49646786</td><td>17</td><td>17</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="apikey">dfa3a11a34db4023badd00c4fa88f80d</td><td>17</td><td>17</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="apikey">253f85121743450eb2f471572ab13767</td><td>17</td><td>17</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="apikey">59c0e376923e41ddac422f0e4a5e8be1</td><td>17</td><td>17</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="apikey">e700a8f8306e470f8b18f3d63fbf5d96</td><td>17</td><td>17</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="apikey">8c8cf9a1fd7a42fa838439c0cc41cc63</td><td>17</td><td>17</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="apikey">e60f9d7d40d142a784738b52df454e89</td><td>17</td><td>17</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="apikey">b712862b006d48aea165db2cb8c249ca</td><td>17</td><td>17</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="apikey">b0cf59007a0d4e99b10e34cec49617a8</td><td>17</td><td>17</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="apikey">6d65fadb4ba94895b64421cfb4447189</td><td>17</td><td>17</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="apikey">5673cf68b7b341db94d71f094ab952cb</td><td>17</td><td>17</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="apikey">014e66bb4a744547a54500cd8948e2d2</td><td>17</td><td>17</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="apikey">cb565814687e4013a3008ae8dea5984e</td><td>17</td><td>17</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="apikey">8e325251ff054973879848841bf3627d</td><td>17</td><td>17</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="apikey">4bae745132cc4700a290e8ad59db8c6e</td><td>17</td><td>17</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="apikey">860da528242e48738e19e89c6cab507c</td><td>17</td><td>0</td><td>0</td><td>0</td><td>17</td><td>0</td></tr>
+<tr><td class="apikey">f03102100d034e8abb39390aed504113</td><td>17</td><td>17</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="apikey">4ec4f170dad9465c8baf1a632909c190</td><td>17</td><td>17</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="apikey">566c45a3ccaa460595ef9db23de1c3a1</td><td>17</td><td>17</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="apikey">6c77a047ecf54be6833f38c158406935</td><td>17</td><td>17</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td class="apikey">b7813a33b1fe4eac8e802d06f1abe973</td><td>17</td><td>0</td><td>15</td><td>2</td><td>17</td><td>0</td></tr>
+<tr><td class="apikey">8fe5a4a579d0432ea85b4f48449c59f4</td><td>17</td><td>17</td><td>0</td><td>0</td><td>0</td><td>0</td></tr>
+</tbody></table>
+</main></body></html>
