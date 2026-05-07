@@ -23,9 +23,10 @@ h1{margin:0;font-size:34px;letter-spacing:0;font-weight:850}
 .card span{display:block;color:var(--muted);font-size:12px;text-transform:uppercase;letter-spacing:.04em}
 .card b{display:block;font-size:28px;line-height:1.1;margin-top:8px}
 .toolbar{position:sticky;top:0;z-index:20;background:rgba(244,246,249,.94);backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:8px;padding:12px;display:grid;grid-template-columns:2fr repeat(5,minmax(150px,1fr)) auto auto;gap:8px;margin:18px 0;box-shadow:var(--shadow)}
-input,select,button{width:100%;border:1px solid #b9c3d3;border-radius:8px;background:#fff;color:var(--text);padding:10px 11px;font:inherit}
+input,select,button,.filter-box>summary{width:100%;border:1px solid #b9c3d3;border-radius:8px;background:#fff;color:var(--text);padding:10px 11px;font:inherit}
 button{cursor:pointer;font-weight:750;background:#123c7c;color:#fff;border-color:#123c7c}
 button.secondary{background:#fff;color:#123c7c}
+.filter-box{position:relative}.filter-box>summary{display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer;list-style:none;font-weight:700}.filter-box>summary::-webkit-details-marker{display:none}.filter-box>summary:after{content:"";width:8px;height:8px;border-right:2px solid #667085;border-bottom:2px solid #667085;transform:rotate(45deg);margin-top:-4px}.filter-box[open]>summary:after{transform:rotate(225deg);margin-top:3px}.filter-menu{position:absolute;top:calc(100% + 6px);left:0;right:0;z-index:40;background:#fff;border:1px solid var(--line);border-radius:8px;box-shadow:var(--shadow);padding:8px;max-height:320px;overflow:auto}.filter-actions{display:flex;gap:6px;margin-bottom:6px}.filter-actions button{padding:6px 8px;font-size:12px}.filter-actions .secondary{background:#f8fafc}.check-row{display:flex;align-items:flex-start;gap:8px;padding:7px 6px;border-radius:6px;cursor:pointer}.check-row:hover{background:#f8fafc}.check-row input{width:auto;margin-top:2px}.check-row span{line-height:1.25}
 .legend{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0 18px}
 .legend-item,.chip,.dot{display:inline-flex;align-items:center;justify-content:center;border-radius:999px;font-size:12px;font-weight:800;white-space:nowrap}
 .legend-item{padding:6px 10px}.chip{padding:4px 9px}.dot{min-width:64px;padding:3px 7px}
@@ -77,10 +78,10 @@ table{border-collapse:collapse;width:100%}th,td{padding:9px 10px;border-bottom:1
   <section class="toolbar" aria-label="Фильтры">
     <input id="search" placeholder="Поиск: партнер, полное имя, ApiKey, описание">
     <select id="groupBy"><option value="partner">Внутри юрформы: партнеры</option><option value="status">Внутри юрформы: главный статус</option><option value="empty">Внутри юрформы: пустые ключи</option></select>
-    <select id="legalFilter"><option value="all">Все юрформы</option><option value="1">Юридическое лицо (79)</option><option value="2">ИП (14)</option><option value="3">Физическое лицо (55)</option></select>
-    <select id="statusFilter"><option value="all">Все статусы</option><option value="Y">Да</option><option value="I">Нет строки СК</option><option value="S">СК отключена</option><option value="U">Кроссы СК выключены</option><option value="M">Нет строки кросса</option><option value="C">Кросс выключен</option><option value="empty">Ключи без кроссов</option></select>
-    <select id="crossFilter"><option value="all">Все кроссы</option><option value="1">Ренессанс: Кросс (НС)</option><option value="3">Гелиос: Практичное КАСКО</option><option value="4">Альфа: КАСКОGO</option><option value="5">Росгосстрах: Подушка безопасности</option><option value="6">Ренессанс: КАСКО от бесполисных</option><option value="7">Альфа: КАСКО от бесполисных</option><option value="8">Альфа: КАСКО от чужих ошибок</option><option value="9">Альфа: КАСКО за 3</option><option value="10">Ингосстрах: АвтоНС+</option><option value="11">Сбер: Автозащита</option><option value="12">Ингосстрах: КАСКО Автозащита</option><option value="13">ВСК: КАСКО Компакт Минимум</option><option value="14">Росгосстрах: КАСКО от бесполисных</option><option value="16">РЕСО: КАСКО Профи Ультралайт</option><option value="17">ПАРИ: КАСКО smart</option><option value="18">Согласие: КАСКОЗащита+</option><option value="20">МАКС: Быстрокаско-1</option></select>
-    <select id="insurerFilter"><option value="all">Все СК</option><option value="Альфа">Альфа</option><option value="ВСК">ВСК</option><option value="Гелиос">Гелиос</option><option value="Ингосстрах">Ингосстрах</option><option value="МАКС">МАКС</option><option value="ПАРИ">ПАРИ</option><option value="Ренессанс">Ренессанс</option><option value="РЕСО">РЕСО</option><option value="Росгосстрах">Росгосстрах</option><option value="Сбер">Сбер</option><option value="Согласие">Согласие</option></select>
+    <details class="filter-box" id="legalFilter"><summary data-label="Юрформы">Юрформы: все</summary><div class="filter-menu"><div class="filter-actions"><button type="button" class="secondary" data-clear="legal">Сбросить</button></div><label class="check-row"><input type="checkbox" data-filter="legal" value="1"><span>Юридическое лицо (79)</span></label><label class="check-row"><input type="checkbox" data-filter="legal" value="2"><span>ИП (14)</span></label><label class="check-row"><input type="checkbox" data-filter="legal" value="3"><span>Физическое лицо (55)</span></label></div></details>
+    <details class="filter-box" id="statusFilter"><summary data-label="Статусы">Статусы: все</summary><div class="filter-menu"><div class="filter-actions"><button type="button" class="secondary" data-clear="status">Сбросить</button></div><label class="check-row"><input type="checkbox" data-filter="status" value="Y"><span>Да</span></label><label class="check-row"><input type="checkbox" data-filter="status" value="I"><span>Нет строки СК</span></label><label class="check-row"><input type="checkbox" data-filter="status" value="S"><span>СК отключена</span></label><label class="check-row"><input type="checkbox" data-filter="status" value="U"><span>Кроссы СК выключены</span></label><label class="check-row"><input type="checkbox" data-filter="status" value="M"><span>Нет строки кросса</span></label><label class="check-row"><input type="checkbox" data-filter="status" value="C"><span>Кросс выключен</span></label><label class="check-row"><input type="checkbox" data-filter="status" value="empty"><span>Ключи без кроссов</span></label></div></details>
+    <details class="filter-box" id="crossFilter"><summary data-label="Кроссы">Кроссы: все</summary><div class="filter-menu"><div class="filter-actions"><button type="button" class="secondary" data-clear="cross">Сбросить</button></div><label class="check-row"><input type="checkbox" data-filter="cross" value="1"><span>Ренессанс: Кросс (НС)</span></label><label class="check-row"><input type="checkbox" data-filter="cross" value="3"><span>Гелиос: Практичное КАСКО</span></label><label class="check-row"><input type="checkbox" data-filter="cross" value="4"><span>Альфа: КАСКОGO</span></label><label class="check-row"><input type="checkbox" data-filter="cross" value="5"><span>Росгосстрах: Подушка безопасности</span></label><label class="check-row"><input type="checkbox" data-filter="cross" value="6"><span>Ренессанс: КАСКО от бесполисных</span></label><label class="check-row"><input type="checkbox" data-filter="cross" value="7"><span>Альфа: КАСКО от бесполисных</span></label><label class="check-row"><input type="checkbox" data-filter="cross" value="8"><span>Альфа: КАСКО от чужих ошибок</span></label><label class="check-row"><input type="checkbox" data-filter="cross" value="9"><span>Альфа: КАСКО за 3</span></label><label class="check-row"><input type="checkbox" data-filter="cross" value="10"><span>Ингосстрах: АвтоНС+</span></label><label class="check-row"><input type="checkbox" data-filter="cross" value="11"><span>Сбер: Автозащита</span></label><label class="check-row"><input type="checkbox" data-filter="cross" value="12"><span>Ингосстрах: КАСКО Автозащита</span></label><label class="check-row"><input type="checkbox" data-filter="cross" value="13"><span>ВСК: КАСКО Компакт Минимум</span></label><label class="check-row"><input type="checkbox" data-filter="cross" value="14"><span>Росгосстрах: КАСКО от бесполисных</span></label><label class="check-row"><input type="checkbox" data-filter="cross" value="16"><span>РЕСО: КАСКО Профи Ультралайт</span></label><label class="check-row"><input type="checkbox" data-filter="cross" value="17"><span>ПАРИ: КАСКО smart</span></label><label class="check-row"><input type="checkbox" data-filter="cross" value="18"><span>Согласие: КАСКОЗащита+</span></label><label class="check-row"><input type="checkbox" data-filter="cross" value="20"><span>МАКС: Быстрокаско-1</span></label></div></details>
+    <details class="filter-box" id="insurerFilter"><summary data-label="СК">СК: все</summary><div class="filter-menu"><div class="filter-actions"><button type="button" class="secondary" data-clear="insurer">Сбросить</button></div><label class="check-row"><input type="checkbox" data-filter="insurer" value="Альфа"><span>Альфа</span></label><label class="check-row"><input type="checkbox" data-filter="insurer" value="ВСК"><span>ВСК</span></label><label class="check-row"><input type="checkbox" data-filter="insurer" value="Гелиос"><span>Гелиос</span></label><label class="check-row"><input type="checkbox" data-filter="insurer" value="Ингосстрах"><span>Ингосстрах</span></label><label class="check-row"><input type="checkbox" data-filter="insurer" value="МАКС"><span>МАКС</span></label><label class="check-row"><input type="checkbox" data-filter="insurer" value="ПАРИ"><span>ПАРИ</span></label><label class="check-row"><input type="checkbox" data-filter="insurer" value="Ренессанс"><span>Ренессанс</span></label><label class="check-row"><input type="checkbox" data-filter="insurer" value="РЕСО"><span>РЕСО</span></label><label class="check-row"><input type="checkbox" data-filter="insurer" value="Росгосстрах"><span>Росгосстрах</span></label><label class="check-row"><input type="checkbox" data-filter="insurer" value="Сбер"><span>Сбер</span></label><label class="check-row"><input type="checkbox" data-filter="insurer" value="Согласие"><span>Согласие</span></label></div></details>
     <button type="button" class="secondary" id="resetBtn">Сброс</button>
     <button type="button" id="expandBtn">Раскрыть</button>
   </section>
@@ -26442,10 +26443,6 @@ table{border-collapse:collapse;width:100%}th,td{padding:9px 10px;border-bottom:1
 const controls = {
   search: document.getElementById('search'),
   groupBy: document.getElementById('groupBy'),
-  legal: document.getElementById('legalFilter'),
-  status: document.getElementById('statusFilter'),
-  cross: document.getElementById('crossFilter'),
-  insurer: document.getElementById('insurerFilter'),
 };
 const statusNames = {"Y":"Да","I":"Нет строки СК","S":"СК отключена","U":"Кроссы СК выключены","M":"Нет строки кросса","C":"Кросс выключен"};
 const counter = document.getElementById('visibleCounter');
@@ -26455,12 +26452,31 @@ const expandBtn = document.getElementById('expandBtn');
 function matchesSearch(value, query) {
   return !query || (value || '').toLowerCase().includes(query);
 }
+function selectedValues(name) {
+  return Array.from(document.querySelectorAll('input[data-filter="' + name + '"]:checked')).map((item) => item.value);
+}
+function matchesAny(values, value) {
+  return values.length === 0 || values.includes(value);
+}
+function updateFilterSummaries() {
+  document.querySelectorAll('.filter-box').forEach((box) => {
+    const summary = box.querySelector('summary');
+    const name = box.id.replace('Filter', '');
+    const checked = Array.from(box.querySelectorAll('input[type="checkbox"]:checked'));
+    const base = summary.dataset.label;
+    summary.textContent = checked.length === 0
+      ? base + ': все'
+      : base + ': ' + checked.length + ' выбрано';
+  });
+}
 function applyFilters() {
   const q = controls.search.value.trim().toLowerCase();
-  const legal = controls.legal.value;
-  const status = controls.status.value;
-  const cross = controls.cross.value;
-  const insurer = controls.insurer.value;
+  const legal = selectedValues('legal');
+  const status = selectedValues('status');
+  const statusCodes = status.filter((value) => value !== 'empty');
+  const emptySelected = status.includes('empty');
+  const cross = selectedValues('cross');
+  const insurer = selectedValues('insurer');
   let visiblePartners = 0;
   let visibleKeys = 0;
 
@@ -26468,24 +26484,21 @@ function applyFilters() {
     const partner = key.closest('[data-partner]');
     const keySearch = key.dataset.search || '';
     const partnerSearch = partner?.dataset.search || '';
-    const legalOk = legal === 'all' || partner?.dataset.legal === legal;
+    const legalOk = matchesAny(legal, partner?.dataset.legal);
     const searchOk = matchesSearch(keySearch + ' ' + partnerSearch, q);
-    const emptyOk = status !== 'empty' || key.dataset.empty === '1';
-    let statusOk = status === 'all' || status === 'empty' || key.dataset.status === status || (status === 'Y' && Number(key.dataset.enabled) === 17);
-    let crossOk = cross === 'all';
-    let insurerOk = insurer === 'all';
+    const emptyOk = !emptySelected || key.dataset.empty === '1';
+    let hasVisibleRow = false;
 
     key.querySelectorAll('tbody tr').forEach((row) => {
-      const rowCrossOk = cross === 'all' || row.dataset.cross === cross;
-      const rowInsurerOk = insurer === 'all' || row.dataset.insurer === insurer;
-      const rowStatusOk = status === 'all' || status === 'empty' || row.dataset.status === status;
+      const rowCrossOk = matchesAny(cross, row.dataset.cross);
+      const rowInsurerOk = matchesAny(insurer, row.dataset.insurer);
+      const rowStatusOk = matchesAny(statusCodes, row.dataset.status);
       const rowVisible = rowCrossOk && rowInsurerOk && rowStatusOk;
       row.classList.toggle('hidden', !rowVisible);
-      if (rowCrossOk) crossOk = true;
-      if (rowInsurerOk) insurerOk = true;
+      if (rowVisible) hasVisibleRow = true;
     });
 
-    const visible = legalOk && searchOk && emptyOk && statusOk && crossOk && insurerOk;
+    const visible = legalOk && searchOk && emptyOk && hasVisibleRow;
     key.classList.toggle('hidden', !visible);
     if (visible) visibleKeys++;
   });
@@ -26493,7 +26506,7 @@ function applyFilters() {
   document.querySelectorAll('[data-partner]').forEach((partner) => {
     const hasKey = !!partner.querySelector('[data-key]:not(.hidden)');
     const searchOk = matchesSearch(partner.dataset.search, q) || hasKey;
-    const legalOk = legal === 'all' || partner.dataset.legal === legal;
+    const legalOk = matchesAny(legal, partner.dataset.legal);
     const visible = hasKey && searchOk && legalOk;
     partner.classList.toggle('hidden', !visible);
     if (visible) visiblePartners++;
@@ -26501,30 +26514,31 @@ function applyFilters() {
 
   document.querySelectorAll('[data-group]').forEach((group) => {
     const hasPartner = !!group.querySelector('[data-partner]:not(.hidden)');
-    const legalOk = legal === 'all' || group.dataset.legal === legal;
+    const legalOk = matchesAny(legal, group.dataset.legal);
     group.classList.toggle('hidden', !(hasPartner && legalOk));
   });
 
   document.querySelectorAll('.matrix th[data-search], .matrix td[data-search]').forEach((cell) => {
-    const legalOk = legal === 'all' || cell.dataset.legal === legal;
+    const legalOk = matchesAny(legal, cell.dataset.legal);
     const searchOk = matchesSearch(cell.dataset.search, q);
-    const emptyOk = status !== 'empty' || cell.dataset.empty === '1';
-    const statusOk = status === 'all' || status === 'empty' || cell.dataset.status === status;
-    const crossOk = cross === 'all' || cell.dataset.cross === cross || !cell.dataset.cross;
-    const insurerOk = insurer === 'all' || cell.dataset.insurer === insurer || !cell.dataset.insurer;
+    const emptyOk = !emptySelected || cell.dataset.empty === '1';
+    const statusOk = matchesAny(statusCodes, cell.dataset.status);
+    const crossOk = !cell.dataset.cross || matchesAny(cross, cell.dataset.cross);
+    const insurerOk = !cell.dataset.insurer || matchesAny(insurer, cell.dataset.insurer);
     cell.classList.toggle('filtered-cell', !(legalOk && searchOk && emptyOk && statusOk && crossOk && insurerOk));
   });
 
   document.querySelectorAll('.matrix tbody tr').forEach((row) => {
     const header = row.querySelector('th');
     const firstData = row.querySelector('td');
-    const crossOk = cross === 'all' || firstData?.dataset.cross === cross;
-    const insurerOk = insurer === 'all' || firstData?.dataset.insurer === insurer;
+    const crossOk = matchesAny(cross, firstData?.dataset.cross);
+    const insurerOk = matchesAny(insurer, firstData?.dataset.insurer);
     row.classList.toggle('hidden', !(crossOk && insurerOk));
     if (header) header.classList.toggle('hidden', !(crossOk && insurerOk));
   });
 
   counter.textContent = visiblePartners + ' партнеров · ' + visibleKeys + ' ApiKey после фильтра';
+  updateFilterSummaries();
 }
 function regroup() {
   const mode = controls.groupBy.value;
@@ -26562,14 +26576,23 @@ function regroup() {
   });
   applyFilters();
 }
-Object.values(controls).forEach((control) => control.addEventListener('input', () => { regroup(); applyFilters(); }));
+controls.search.addEventListener('input', applyFilters);
+controls.groupBy.addEventListener('input', () => { regroup(); applyFilters(); });
+document.querySelectorAll('input[data-filter]').forEach((control) => {
+  control.addEventListener('change', applyFilters);
+});
+document.querySelectorAll('[data-clear]').forEach((button) => {
+  button.addEventListener('click', () => {
+    const name = button.dataset.clear;
+    document.querySelectorAll('input[data-filter="' + name + '"]').forEach((item) => item.checked = false);
+    applyFilters();
+  });
+});
 resetBtn.addEventListener('click', () => {
   controls.search.value = '';
   controls.groupBy.value = 'partner';
-  controls.legal.value = 'all';
-  controls.status.value = 'all';
-  controls.cross.value = 'all';
-  controls.insurer.value = 'all';
+  document.querySelectorAll('input[data-filter]').forEach((item) => item.checked = false);
+  document.querySelectorAll('.filter-box').forEach((box) => box.open = false);
   regroup();
 });
 expandBtn.addEventListener('click', () => {
