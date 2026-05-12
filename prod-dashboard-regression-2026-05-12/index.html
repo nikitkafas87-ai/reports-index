@@ -434,7 +434,7 @@
       <div class="section-head">
         <div>
           <h2>Что проверено</h2>
-          <p>Покрытие по основным сценариям, которые раньше тестировались в задачах `INS-2289`, `INS-2290`, `INS-3095`, `INS-3379`.</p>
+          <p>Покрытие по ранее протестированным блокам Dashboard. Ранее найденные на dev дефекты на prod не воспроизвелись, считаем их исправленными.</p>
         </div>
       </div>
       <div class="body timeline">
@@ -449,8 +449,8 @@
           <span class="status ok">OK</span>
         </div>
         <div class="step">
-          <strong>INS-2289: настройки API-ключа</strong>
-          <p>Продукт обязателен при создании; отдельного блока `Продукты` у созданного ключа нет; проверены поля SMS/email, приоритетная СК, enrichment, reminders, paid services, request costs и восстановление baseline.</p>
+          <strong>ОСАГО: настройки API-ключа</strong>
+          <p>Сквозное изменение, save, сверка payload/DB и восстановление baseline выполнены по ключевым полям вкладок: `Основные настройки`, `Приоритетная СК`, `Email и брендирование`, `AlfaId настройки`. Абсолютно каждый контрол на странице не переключался.</p>
           <span class="status ok">OK</span>
         </div>
         <div class="step">
@@ -459,8 +459,8 @@
           <span class="status ok">OK</span>
         </div>
         <div class="step">
-          <strong>INS-2290: КВ ОСАГО</strong>
-          <p>Загрузка `GET Commissions`, создание текущего и будущего периода, изменение ставок, min commissions, исключения, кроссовая комиссия, удаление периодов без stale UI.</p>
+          <strong>ОСАГО: КВ</strong>
+          <p>Загрузка `GET Commissions`, создание текущего и будущего периода, изменение ставок, min commissions, исключения, кроссовая комиссия, корректное обновление UI после удаления периодов.</p>
           <span class="status ok">OK</span>
         </div>
         <div class="step">
@@ -477,6 +477,51 @@
           <strong>МФО: вендоры</strong>
           <p>Добавление одного и нескольких вендоров, защита от дублей, сохранение статуса `isEnabled -> IsDisabled`, карточка вендора.</p>
           <span class="status ok">OK</span>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="section-head">
+        <div>
+          <h2>ОСАГО: вкладки настроек API-ключа</h2>
+          <p>Подробность по проверенному блоку настроек ключа `559229f8b4b04b8fb52d16b40d566054`.</p>
+        </div>
+      </div>
+      <div class="body">
+        <table>
+          <thead>
+            <tr>
+              <th>Вкладка</th>
+              <th>Что менялось / сверялось</th>
+              <th>Итог</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Основные настройки</td>
+              <td>Права КЦ, callback, landing URL, обогащение, SMS-проверка данных, возврат клиента на офферы, быстрый email-возврат.</td>
+              <td><span class="status ok">Save/API/DB/restore OK</span></td>
+            </tr>
+            <tr>
+              <td>Приоритетная СК</td>
+              <td>Приоритетная страховая, поведение показа приоритетной СК, таймаут ожидания ответа.</td>
+              <td><span class="status ok">Save/API/DB/restore OK</span></td>
+            </tr>
+            <tr>
+              <td>Email и брендирование</td>
+              <td>Email отправителя, имя отправителя в email-рассылке, имя отправителя в SMS-рассылке.</td>
+              <td><span class="status ok">Save/API/DB/restore OK</span></td>
+            </tr>
+            <tr>
+              <td>AlfaId настройки</td>
+              <td>Платные сервисы, настройки обогащения, стоимости запросов, обработка десятичных значений через запятую.</td>
+              <td><span class="status ok">Save/API/DB/restore OK</span></td>
+            </tr>
+          </tbody>
+        </table>
+        <div class="callout ok" style="margin-top:16px">
+          Ранее найденные на dev дефекты по настройкам API-ключа на prod не воспроизвелись. Проверенные изменения корректно уходили в `PUT /api/PartnerApiKey`, подтверждались read-only `SELECT` в `InsappCoreProd` и были восстановлены в исходное состояние.
         </div>
       </div>
     </section>
@@ -504,8 +549,8 @@
               <td><span class="status ok">OK</span></td>
             </tr>
             <tr>
-              <td>OSAGO detailed settings</td>
-              <td>Измененные поля сохранялись в `PUT /api/PartnerApiKey`, DB совпадала с payload, затем значения восстановлены в `NULL`/`false`.</td>
+              <td>OSAGO API-key settings</td>
+              <td>Ключевые поля вкладок `Основные настройки`, `Приоритетная СК`, `Email и брендирование`, `AlfaId настройки` сохранялись в `PUT /api/PartnerApiKey`, DB совпадала с payload, затем значения восстановлены в `NULL`/`false`.</td>
               <td><span class="status ok">OK</span></td>
             </tr>
             <tr>
@@ -514,19 +559,9 @@
               <td><span class="status ok">OK</span></td>
             </tr>
             <tr>
-              <td>KV bug 18</td>
-              <td>`GET /api/PartnerCommissions/Commissions/6e5a6599-6a8f-4716-a199-f8b0637aa0af` и `.../0b6d2ee0-d2e0-42b6-bbc5-ff39146dbb02` вернули 200/result true без `ArgumentNullException`.</td>
-              <td><span class="status ok">OK</span></td>
-            </tr>
-            <tr>
-              <td>KV delete stale UI</td>
-              <td>После удаления последнего периода UI показывает `Текущий период: Не выбран`, действия по периоду отключены.</td>
-              <td><span class="status ok">OK</span></td>
-            </tr>
-            <tr>
-              <td>KV voluntary cross scroll</td>
-              <td>Выбор последнего чекбокса добровольного кросса не изменил scroll position.</td>
-              <td><span class="status ok">OK</span></td>
+              <td>Ранее найденные dev-дефекты</td>
+              <td>По проверенным сценариям API-key settings, СК/вендоров и КВ дефекты, найденные на dev, на prod не воспроизвелись.</td>
+              <td><span class="status ok">Пофикшены</span></td>
             </tr>
             <tr>
               <td>Cleanup DB</td>
@@ -555,8 +590,8 @@
           В КВ ввод `12.5` для процентной ставки ушел в payload и DB как `12`. Если дробные проценты должны поддерживаться, это стоит оформить отдельной правкой.
         </div>
         <div class="callout ok">
-          <strong>Известное left as is</strong><br>
-          В модалке исключения КВ кнопки `Общая`, `ФЛ`, `ЮЛ` остаются видимыми при существующей `Общая`; это совпадает с текущим решением в Tracker.
+          <strong>Dev-регрессия</strong><br>
+          Дефекты, ранее найденные на dev по проверенным блокам, на prod не воспроизвелись. Критичных новых блокеров в ходе проверки не найдено.
         </div>
       </div>
     </section>
