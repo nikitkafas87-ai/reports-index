@@ -450,7 +450,7 @@
         </div>
         <div class="step">
           <strong>ОСАГО: настройки API-ключа</strong>
-          <p>Сквозное изменение, save, сверка payload/DB и восстановление baseline выполнены по ключевым полям вкладок: `Основные настройки`, `Приоритетная СК`, `Email и брендирование`, `AlfaId настройки`. Абсолютно каждый контрол на странице не переключался.</p>
+          <p>Сквозное изменение, save, сверка payload/DB и восстановление baseline выполнены по вкладкам: `Основные настройки`, `Приоритетная СК`, `Лимиты`, `Пролонгация`, `Email и брендирование`, `Бейджи и подарки`, `AlfaId настройки`.</p>
           <span class="status ok">OK</span>
         </div>
         <div class="step">
@@ -509,9 +509,24 @@
               <td><span class="status ok">Save/API/DB/restore OK</span></td>
             </tr>
             <tr>
+              <td>Лимиты</td>
+              <td>Включение лимитов и изменение значений для `Характеристики авто` и `КБМ`; payload ушел как `limitsJson={"CarCharacteristics":11,"Kbm":12}`.</td>
+              <td><span class="status ok">Save/API/DB/restore OK</span></td>
+            </tr>
+            <tr>
+              <td>Пролонгация</td>
+              <td>Включение общей и партнерской пролонгации, всех видимых email-уведомлений и SMS-уведомлений на вкладке.</td>
+              <td><span class="status ok">Save/API/DB/restore OK</span></td>
+            </tr>
+            <tr>
               <td>Email и брендирование</td>
               <td>Email отправителя, имя отправителя в email-рассылке, имя отправителя в SMS-рассылке.</td>
               <td><span class="status ok">Save/API/DB/restore OK</span></td>
+            </tr>
+            <tr>
+              <td>Бейджи и подарки</td>
+              <td>Включение бейджей, промокодов и заполнение провайдеров промокодов; успешный save проходит с числовыми значениями.</td>
+              <td><span class="status warn">Есть замечания</span></td>
             </tr>
             <tr>
               <td>AlfaId настройки</td>
@@ -521,7 +536,7 @@
           </tbody>
         </table>
         <div class="callout ok" style="margin-top:16px">
-          Ранее найденные на dev дефекты по настройкам API-ключа на prod не воспроизвелись. Проверенные изменения корректно уходили в `PUT /api/PartnerApiKey`, подтверждались read-only `SELECT` в `InsappCoreProd` и были восстановлены в исходное состояние.
+          Ранее найденные на dev дефекты по настройкам API-ключа на prod не воспроизвелись. Проверенные изменения уходили в `PUT /api/PartnerApiKey`, подтверждались read-only `SELECT` в `InsappCoreProd` и были восстановлены в исходное состояние. По вкладке `Бейджи и подарки` найдены отдельные prod-замечания по валидации и сохранению провайдера.
         </div>
       </div>
     </section>
@@ -550,7 +565,7 @@
             </tr>
             <tr>
               <td>OSAGO API-key settings</td>
-              <td>Ключевые поля вкладок `Основные настройки`, `Приоритетная СК`, `Email и брендирование`, `AlfaId настройки` сохранялись в `PUT /api/PartnerApiKey`, DB совпадала с payload, затем значения восстановлены в `NULL`/`false`.</td>
+              <td>Поля вкладок `Основные настройки`, `Приоритетная СК`, `Лимиты`, `Пролонгация`, `Email и брендирование`, `Бейджи и подарки`, `AlfaId настройки` сохранялись в `PUT /api/PartnerApiKey`, DB сверялась с payload, затем значения восстановлены в baseline.</td>
               <td><span class="status ok">OK</span></td>
             </tr>
             <tr>
@@ -588,6 +603,14 @@
         <div class="callout warn">
           <strong>KV commission rate</strong><br>
           В КВ ввод `12.5` для процентной ставки ушел в payload и DB как `12`. Если дробные проценты должны поддерживаться, это стоит оформить отдельной правкой.
+        </div>
+        <div class="callout warn">
+          <strong>Промокоды: нет UI-валидации типа</strong><br>
+          Поля провайдеров промокодов принимают текст, но API ожидает integer. При вводе строк `codex-gift-1` ... `codex-gift-4` save возвращает 400.
+        </div>
+        <div class="callout warn">
+          <strong>Промокоды: provider 1</strong><br>
+          При успешном save с числовыми значениями `1`, `2`, `3`, `4` поле `GiftProvider1` осталось `NULL`, тогда как `GiftProvider2=2`, `GiftProvider3=3`, `GiftProvider4=4` сохранились.
         </div>
         <div class="callout ok">
           <strong>Dev-регрессия</strong><br>
