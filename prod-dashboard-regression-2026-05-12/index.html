@@ -260,6 +260,59 @@
       gap: 12px;
     }
 
+    .browser-tabs {
+      display: grid;
+      gap: 16px;
+    }
+
+    .tab-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      align-items: flex-end;
+      border-bottom: 1px solid var(--line);
+      padding: 0 2px;
+    }
+
+    .tab-button {
+      appearance: none;
+      border: 1px solid var(--line);
+      border-bottom: 0;
+      background: #edf1f7;
+      color: #344054;
+      border-radius: 8px 8px 0 0;
+      padding: 10px 15px;
+      font: inherit;
+      font-weight: 650;
+      cursor: pointer;
+      min-height: 42px;
+    }
+
+    .tab-button:hover {
+      background: #f7f9fc;
+    }
+
+    .tab-button.active {
+      background: var(--surface);
+      color: var(--ink);
+      position: relative;
+      top: 1px;
+    }
+
+    .tab-panel {
+      display: none;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    .tab-summary {
+      margin: 0 0 14px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
     .proposal-item {
       display: grid;
       grid-template-columns: 34px 1fr;
@@ -484,59 +537,158 @@
     <section>
       <div class="section-head">
         <div>
-          <h2>ОСАГО: вкладки настроек API-ключа</h2>
-          <p>Подробность по проверенному блоку настроек ключа `559229f8b4b04b8fb52d16b40d566054`.</p>
+          <h2>Детальное покрытие</h2>
+          <p>Переключаемые разделы по основным кнопкам и страницам настроек ключа `559229f8b4b04b8fb52d16b40d566054`.</p>
         </div>
       </div>
-      <div class="body">
-        <table>
-          <thead>
-            <tr>
-              <th>Вкладка</th>
-              <th>Что менялось / сверялось</th>
-              <th>Итог</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Основные настройки</td>
-              <td>Права КЦ, callback, landing URL, обогащение, SMS-проверка данных, возврат клиента на офферы, быстрый email-возврат.</td>
-              <td><span class="status ok">Save/API/DB/restore OK</span></td>
-            </tr>
-            <tr>
-              <td>Приоритетная СК</td>
-              <td>Приоритетная страховая, поведение показа приоритетной СК, таймаут ожидания ответа.</td>
-              <td><span class="status ok">Save/API/DB/restore OK</span></td>
-            </tr>
-            <tr>
-              <td>Лимиты</td>
-              <td>Включение лимитов и изменение значений для `Характеристики авто` и `КБМ`; payload ушел как `limitsJson={"CarCharacteristics":11,"Kbm":12}`.</td>
-              <td><span class="status ok">Save/API/DB/restore OK</span></td>
-            </tr>
-            <tr>
-              <td>Пролонгация</td>
-              <td>Включение общей и партнерской пролонгации, всех видимых email-уведомлений и SMS-уведомлений на вкладке.</td>
-              <td><span class="status ok">Save/API/DB/restore OK</span></td>
-            </tr>
-            <tr>
-              <td>Email и брендирование</td>
-              <td>Email отправителя, имя отправителя в email-рассылке, имя отправителя в SMS-рассылке.</td>
-              <td><span class="status ok">Save/API/DB/restore OK</span></td>
-            </tr>
-            <tr>
-              <td>Бейджи и подарки</td>
-              <td>Включение бейджей, промокодов и заполнение провайдеров промокодов; успешный save проходит с числовыми значениями.</td>
-              <td><span class="status warn">Есть замечания</span></td>
-            </tr>
-            <tr>
-              <td>AlfaId настройки</td>
-              <td>Платные сервисы, настройки обогащения, стоимости запросов, обработка десятичных значений через запятую.</td>
-              <td><span class="status ok">Save/API/DB/restore OK</span></td>
-            </tr>
-          </tbody>
-        </table>
-        <div class="callout ok" style="margin-top:16px">
-          Ранее найденные на dev дефекты по настройкам API-ключа на prod не воспроизвелись. Проверенные изменения уходили в `PUT /api/PartnerApiKey`, подтверждались read-only `SELECT` в `InsappCoreProd` и были восстановлены в исходное состояние. По вкладке `Бейджи и подарки` найдены отдельные prod-замечания по валидации и сохранению провайдера.
+      <div class="body browser-tabs" data-tabs>
+        <div class="tab-list" role="tablist" aria-label="Детальное покрытие">
+          <button class="tab-button active" type="button" role="tab" aria-selected="true" aria-controls="tab-api-settings" data-tab-target="tab-api-settings">Настройки API-ключа</button>
+          <button class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="tab-kv" data-tab-target="tab-kv">КВ партнера</button>
+          <button class="tab-button" type="button" role="tab" aria-selected="false" aria-controls="tab-insurers-vendors" data-tab-target="tab-insurers-vendors">СК/Вендоры</button>
+        </div>
+
+        <div id="tab-api-settings" class="tab-panel active" role="tabpanel">
+          <p class="tab-summary">Сквозной цикл: изменение в UI, `PUT /api/PartnerApiKey`, read-only `SELECT` в `InsappCoreProd`, восстановление baseline.</p>
+          <table>
+            <thead>
+              <tr>
+                <th>Вкладка</th>
+                <th>Что менялось / сверялось</th>
+                <th>Итог</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Основные настройки</td>
+                <td>Права КЦ, callback, landing URL, обогащение, SMS-проверка данных, возврат клиента на офферы, быстрый email-возврат.</td>
+                <td><span class="status ok">Save/API/DB/restore OK</span></td>
+              </tr>
+              <tr>
+                <td>Приоритетная СК</td>
+                <td>Приоритетная страховая, поведение показа приоритетной СК, таймаут ожидания ответа.</td>
+                <td><span class="status ok">Save/API/DB/restore OK</span></td>
+              </tr>
+              <tr>
+                <td>Лимиты</td>
+                <td>Включение лимитов и изменение значений для `Характеристики авто` и `КБМ`; payload ушел как `limitsJson={"CarCharacteristics":11,"Kbm":12}`.</td>
+                <td><span class="status ok">Save/API/DB/restore OK</span></td>
+              </tr>
+              <tr>
+                <td>Пролонгация</td>
+                <td>Включение общей и партнерской пролонгации, всех видимых email-уведомлений и SMS-уведомлений на вкладке.</td>
+                <td><span class="status ok">Save/API/DB/restore OK</span></td>
+              </tr>
+              <tr>
+                <td>Email и брендирование</td>
+                <td>Email отправителя, имя отправителя в email-рассылке, имя отправителя в SMS-рассылке.</td>
+                <td><span class="status ok">Save/API/DB/restore OK</span></td>
+              </tr>
+              <tr>
+                <td>Бейджи и подарки</td>
+                <td>Включение бейджей, промокодов и заполнение провайдеров промокодов валидными значениями `2`, `3`, `4`, `5`; DB подтвердила `GiftProvider1=2`, `GiftProvider2=3`, `GiftProvider3=4`, `GiftProvider4=5`.</td>
+                <td><span class="status ok">Save/API/DB/restore OK</span></td>
+              </tr>
+              <tr>
+                <td>AlfaId настройки</td>
+                <td>Платные сервисы, настройки обогащения, стоимости запросов, обработка десятичных значений через запятую.</td>
+                <td><span class="status ok">Save/API/DB/restore OK</span></td>
+              </tr>
+            </tbody>
+          </table>
+          <div class="callout ok" style="margin-top:16px">
+            Ранее найденные на dev дефекты по настройкам API-ключа на prod не воспроизвелись. Проверенные изменения уходили в `PUT /api/PartnerApiKey`, подтверждались read-only `SELECT` в `InsappCoreProd` и были восстановлены в исходное состояние.
+          </div>
+        </div>
+
+        <div id="tab-kv" class="tab-panel" role="tabpanel">
+          <p class="tab-summary">Проверялась страница `КВ партнера` для ОСАГО-ключа: загрузка, действия с периодами, исключения, комиссии и cleanup.</p>
+          <table>
+            <thead>
+              <tr>
+                <th>Кнопка / блок</th>
+                <th>Что тестировалось</th>
+                <th>Итог</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Открыть КВ партнера</td>
+                <td>Переход на страницу, `GET /api/PartnerCommissions/Commissions/{apiKeyId}`, пустое состояние без ошибок.</td>
+                <td><span class="status ok">OK</span></td>
+              </tr>
+              <tr>
+                <td>Новый период</td>
+                <td>Создание текущего периода и будущего периода, проверка диапазонов дат в API/DB и отображение текущего/будущего статуса.</td>
+                <td><span class="status ok">OK</span></td>
+              </tr>
+              <tr>
+                <td>Добавить исключение</td>
+                <td>Модалка, disabled без выбора СК, отсутствие `Все страховые` в dropdown, создание исключения для `АО "АЛЬФАСТРАХОВАНИЕ"` с `IsJuridical=NULL`.</td>
+                <td><span class="status ok">OK</span></td>
+              </tr>
+              <tr>
+                <td>Сохранить настройки</td>
+                <td>Смена типа комиссии, min commission partner/Insapp, cross commission type, voluntary cross checkbox и сверка payload/DB.</td>
+                <td><span class="status ok">OK</span></td>
+              </tr>
+              <tr>
+                <td>Удалить период</td>
+                <td>Удаление будущего и текущего тестовых периодов через Dashboard API, проверка `value=[]`, отсутствие stale UI после удаления последнего периода.</td>
+                <td><span class="status ok">OK</span></td>
+              </tr>
+              <tr>
+                <td>Скопировать период / Удалить все КВ за период</td>
+                <td>Проверено disabled-состояние без выбранного периода. Отдельный позитивный сценарий копирования периода в этом прогоне не запускался.</td>
+                <td><span class="status info">State checked</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div id="tab-insurers-vendors" class="tab-panel" role="tabpanel">
+          <p class="tab-summary">Проверялись страницы `СК/Вендоры` для ОСАГО, КАСКО, Ипотеки и МФО: добавление, дубли, таблицы, карточки и cleanup.</p>
+          <table>
+            <thead>
+              <tr>
+                <th>Кнопка / блок</th>
+                <th>Что тестировалось</th>
+                <th>Итог</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Добавить СК</td>
+                <td>ОСАГО, КАСКО, Ипотека: открытие модалки, disabled без выбора, single/multiple add, duplicate prevention, DB `ProductTypeId` и `IsDisabled` mapping.</td>
+                <td><span class="status ok">OK</span></td>
+              </tr>
+              <tr>
+                <td>Таблица СК</td>
+                <td>Статус `isEnabled -> IsDisabled`, рассрочка, `usesNewApi`, продуктовые переключатели и сохранение через table save.</td>
+                <td><span class="status ok">OK</span></td>
+              </tr>
+              <tr>
+                <td>Карточка СК</td>
+                <td>Открытие карточек ОСАГО/КАСКО/Ипотеки, credentials, продуктовые поля, отсутствие кросс-продуктов на КАСКО и Ипотеке.</td>
+                <td><span class="status ok">OK</span></td>
+              </tr>
+              <tr>
+                <td>Кросс-продукты в карточке ОСАГО</td>
+                <td>Добавление кросса, сохранение, повторное добавление после save, удаление без ручного reload, проверка `PartnerInsurerUpsaleSettings` cleanup.</td>
+                <td><span class="status ok">OK</span></td>
+              </tr>
+              <tr>
+                <td>Добавить вендор</td>
+                <td>МФО: открытие модалки, disabled без выбора, добавление одного и нескольких вендоров, duplicate prevention.</td>
+                <td><span class="status ok">OK</span></td>
+              </tr>
+              <tr>
+                <td>Таблица и карточка вендора</td>
+                <td>Статус `isEnabled -> IsDisabled`, сохранение, открытие карточки, credentials. Отдельно отмечено, что в карточке МФО в шапке показывается `ApiKeyId` под подписью `ApiKey`.</td>
+                <td><span class="status warn">Есть UI-замечание</span></td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </section>
@@ -604,13 +756,9 @@
           <strong>KV commission rate</strong><br>
           В КВ ввод `12.5` для процентной ставки ушел в payload и DB как `12`. Если дробные проценты должны поддерживаться, это стоит оформить отдельной правкой.
         </div>
-        <div class="callout warn">
-          <strong>Промокоды: нет UI-валидации типа</strong><br>
-          Поля провайдеров промокодов принимают текст, но API ожидает integer. При вводе строк `codex-gift-1` ... `codex-gift-4` save возвращает 400.
-        </div>
-        <div class="callout warn">
-          <strong>Промокоды: provider 1</strong><br>
-          При успешном save с числовыми значениями `1`, `2`, `3`, `4` поле `GiftProvider1` осталось `NULL`, тогда как `GiftProvider2=2`, `GiftProvider3=3`, `GiftProvider4=4` сохранились.
+        <div class="callout ok">
+          <strong>Промокоды</strong><br>
+          Перепроверено на валидных значениях `2`, `3`, `4`, `5`: все четыре провайдера сохранились в DB. Предыдущее замечание снято: оно было связано с использованием значения `1` вне валидного диапазона `2..6`.
         </div>
         <div class="callout ok">
           <strong>Dev-регрессия</strong><br>
@@ -705,5 +853,25 @@
       </div>
     </section>
   </main>
+  <script>
+    document.querySelectorAll('[data-tabs]').forEach((tabs) => {
+      const buttons = Array.from(tabs.querySelectorAll('[data-tab-target]'));
+      const panels = Array.from(tabs.querySelectorAll('.tab-panel'));
+
+      buttons.forEach((button) => {
+        button.addEventListener('click', () => {
+          const targetId = button.dataset.tabTarget;
+          buttons.forEach((item) => {
+            const isActive = item === button;
+            item.classList.toggle('active', isActive);
+            item.setAttribute('aria-selected', String(isActive));
+          });
+          panels.forEach((panel) => {
+            panel.classList.toggle('active', panel.id === targetId);
+          });
+        });
+      });
+    });
+  </script>
 </body>
 </html>
