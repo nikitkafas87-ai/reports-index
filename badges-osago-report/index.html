@@ -5,28 +5,32 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>ОСАГО — Бейджи</title>
 <style>
-:root { --bg:#f4f6f8; --text:#1f2933; --muted:#667085; --line:#d9dee7; --full:#177245; --partial:#9a6700; --none:#b42318; }
+:root { --bg:#f3f5f8; --panel:#fff; --text:#172033; --muted:#667085; --line:#d9e0ea; --accent:#205493; --full:#177245; --partial:#9a6700; --none:#b42318; }
 * { box-sizing:border-box; }
-body { margin:0; background:var(--bg); color:var(--text); font:14px/1.45 Arial,sans-serif; }
-main { max-width:1440px; margin:0 auto; padding:24px; }
-h1 { margin:0 0 6px; font-size:28px; }
+body { margin:0; background:var(--bg); color:var(--text); font:14px/1.45 Inter,Segoe UI,Arial,sans-serif; }
+main { max-width:1680px; margin:0 auto; padding:24px; }
+.hero { padding:28px 0 18px; }
+.eyebrow { font-weight:700; color:var(--accent); text-transform:uppercase; font-size:12px; letter-spacing:.08em; }
+h1 { margin:6px 0 8px; font-size:34px; line-height:1.1; }
 .meta,.counter,.legend { color:var(--muted); }
 .legend { overflow-wrap:break-word; }
 .legend-marks { display:flex; flex-wrap:wrap; gap:6px 10px; margin-bottom:4px; }
 .legend-text { display:block; min-width:0; overflow-wrap:break-word; }
-.summary { display:grid; grid-template-columns:repeat(auto-fit, 220px); gap:8px; margin:16px 0 20px; }
-.summary span { min-height:38px; border:1px solid var(--line); background:#fff; border-radius:6px; padding:8px 10px; display:flex; align-items:center; }
-.toolbar { --control-width:220px; --control-height:38px; display:grid; grid-template-columns:repeat(auto-fit, var(--control-width)); align-items:end; gap:10px; margin:0 0 16px; }
+.metrics { display:grid; grid-template-columns:repeat(4,minmax(160px,1fr)); gap:12px; margin:18px 0; }
+.metric { background:var(--panel); border:1px solid var(--line); border-radius:8px; padding:14px; }
+.metric span { display:block; color:var(--muted); font-size:12px; }
+.metric b { display:block; font-size:25px; margin-top:3px; }
+.toolbar { --control-width:220px; --control-height:38px; position:sticky; top:0; z-index:20; background:rgba(243,245,248,.96); backdrop-filter:blur(8px); border:1px solid var(--line); border-radius:8px; padding:12px; display:flex; flex-wrap:wrap; gap:10px; align-items:flex-start; margin:0 0 16px; }
 .filter-control { display:flex; flex-direction:column; gap:4px; width:var(--control-width); color:var(--muted); }
 .filter-label { color:var(--muted); }
-button { width:var(--control-width); height:var(--control-height); border:1px solid #98a2b3; background:#fff; border-radius:6px; padding:8px 12px; cursor:pointer; white-space:nowrap; }
+button { width:var(--control-width); height:var(--control-height); border:1px solid var(--line); background:#fff; border-radius:6px; padding:8px 12px; cursor:pointer; white-space:nowrap; }
 .multi-filter { position:relative; width:var(--control-width); min-width:0; }
-.multi-filter summary { position:relative; list-style:none; height:var(--control-height); border:1px solid #98a2b3; background:#fff; border-radius:6px; padding:8px 28px 8px 12px; cursor:pointer; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.multi-filter summary { position:relative; list-style:none; height:var(--control-height); border:1px solid var(--line); background:#fff; border-radius:6px; padding:8px 28px 8px 12px; cursor:pointer; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 .multi-filter summary::after { content:""; position:absolute; right:12px; top:50%; width:7px; height:7px; border-right:1.5px solid #344054; border-bottom:1.5px solid #344054; transform:translateY(-65%) rotate(45deg); }
 .multi-filter[open] summary::after { transform:translateY(-35%) rotate(225deg); }
 .multi-filter summary::-webkit-details-marker { display:none; }
 .multi-filter[open] summary { border-bottom-left-radius:0; border-bottom-right-radius:0; }
-.multi-options { position:absolute; z-index:4; width:min(520px, 90vw); max-height:260px; overflow:auto; border:1px solid #98a2b3; border-top:0; background:#fff; border-radius:0 0 6px 6px; box-shadow:0 12px 24px rgba(16,24,40,.16); }
+.multi-options { position:absolute; z-index:40; width:min(520px, 90vw); max-height:260px; overflow:auto; border:1px solid var(--line); border-top:0; background:#fff; border-radius:0 0 6px 6px; box-shadow:0 14px 32px rgba(16,24,40,.16); }
 .multi-option { display:grid; grid-template-columns:auto minmax(0,1fr); gap:8px; align-items:start; padding:7px 10px; color:var(--text); }
 .multi-option + .multi-option { border-top:1px solid #eef2f6; }
 .multi-option span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -72,10 +76,9 @@ td.badge-optional { background:#f5f8ff; }
 .inactive { opacity:.55; }
 tbody tr:hover { background:#f9fafb; }
 @media (max-width: 760px) {
-main { padding:12px; }
-h1 { font-size:24px; }
-.summary { display:grid; grid-template-columns:1fr; gap:6px; }
-.summary span { padding:7px 8px; }
+main { padding:14px; }
+h1 { font-size:27px; }
+.metrics { grid-template-columns:1fr; }
 .legend { display:block; }
 .legend-marks { flex-direction:column; align-items:flex-start; }
 .legend-mark { max-width:calc(100vw - 24px); }
@@ -106,15 +109,23 @@ tbody tr:hover { background:#fff; }
 </head>
 <body>
 <main>
-<h1>ОСАГО — Бейджи</h1>
-<div class="meta">Сформировано: 08.06.2026, 14:47:23</div>
-<div class="summary">
-  <span>Всего ключей: 140</span>
-  <span>Проверяемых типов бейджей: 5</span>
-  <span>Все 4 бейджа: 92</span>
-  <span>Не все бейджи: 0</span>
-  <span>Без бейджей: 48</span>
-</div>
+<section class="hero">
+  <div class="eyebrow">Insapp · prod DB</div>
+  <h1>ОСАГО — Бейджи</h1>
+  <div class="meta">Сформировано: 08.06.2026, 20:37:35 · Источник: активные партнеры, активные ApiKey, только SupportedProductTypesJson = [1].</div>
+  <div class="metrics">
+    <div class="metric"><span>ApiKey ОСАГО</span><b>140</b></div>
+    <div class="metric"><span>Типов бейджей</span><b>5</b></div>
+    <div class="metric"><span>Все 4 бейджа</span><b>92</b></div>
+    <div class="metric"><span>Без бейджей</span><b>48</b></div>
+  </div>
+  <div class="metrics">
+    <div class="metric"><span>Не все бейджи</span><b>0</b></div>
+    <div class="metric"><span>С LandingUrl</span><b>52</b></div>
+    <div class="metric"><span>Без LandingUrl</span><b>88</b></div>
+    <div class="metric"><span>Обязательных бейджей</span><b>4</b></div>
+  </div>
+</section>
 <div class="legend"><span class="legend-marks"><span class="legend-mark ok">Подключено</span><span class="legend-mark off">Не подключено</span><span class="legend-mark neutral">APay не обязателен</span></span><span class="legend-text">Типы бейджей: APay, BestService, LoyalInsurer, UserChoice, UsersInsurer. APay показан отдельно и не входит в обязательное требование 4/4: 4/4 означает BestService, LoyalInsurer, UserChoice и UsersInsurer.</span></div>
 <div class="toolbar">
   <div class="filter-control">
