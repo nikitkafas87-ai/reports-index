@@ -8,6 +8,7 @@
 :root { --bg:#f3f5f8; --panel:#fff; --text:#172033; --muted:#667085; --line:#d9e0ea; --accent:#205493; --full:#177245; --partial:#9a6700; --none:#b42318; }
 * { box-sizing:border-box; }
 body { margin:0; background:var(--bg); color:var(--text); font:14px/1.45 Inter,Segoe UI,Arial,sans-serif; }
+body::before { content:""; display:none; --report-layout:"desktop table, mobile adaptive cards"; }
 main { max-width:1680px; margin:0 auto; padding:24px; }
 .hero { padding:28px 0 18px; }
 .eyebrow { font-weight:700; color:var(--accent); text-transform:uppercase; font-size:12px; letter-spacing:.08em; }
@@ -30,7 +31,7 @@ button { width:var(--control-width); height:var(--control-height); border:1px so
 .multi-filter[open] summary::after { transform:translateY(-35%) rotate(225deg); }
 .multi-filter summary::-webkit-details-marker { display:none; }
 .multi-filter[open] summary { border-bottom-left-radius:0; border-bottom-right-radius:0; }
-.multi-options { position:absolute; z-index:40; width:min(520px, 90vw); max-height:260px; overflow:auto; border:1px solid var(--line); border-top:0; background:#fff; border-radius:0 0 6px 6px; box-shadow:0 14px 32px rgba(16,24,40,.16); }
+.multi-options { position:absolute; z-index:40; width:min(520px, 90vw); max-height:260px; overflow:auto; overscroll-behavior:contain; border:1px solid var(--line); border-top:0; background:#fff; border-radius:0 0 6px 6px; box-shadow:0 14px 32px rgba(16,24,40,.16); }
 .multi-option { display:grid; grid-template-columns:auto minmax(0,1fr); gap:8px; align-items:start; padding:7px 10px; color:var(--text); }
 .multi-option + .multi-option { border-top:1px solid #eef2f6; }
 .multi-option span { overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
@@ -76,33 +77,39 @@ td.badge-optional { background:#f5f8ff; }
 .inactive { opacity:.55; }
 tbody tr:hover { background:#f9fafb; }
 @media (max-width: 760px) {
-main { padding:14px; }
+html,body { width:100%; max-width:100%; overflow-x:hidden; }
+body::before { --report-layout:"mobile adaptive cards"; }
+main { width:100%; max-width:100%; padding:14px; }
 h1 { font-size:27px; }
 .metrics { grid-template-columns:1fr; }
+.metric { min-width:0; }
 .legend { display:block; }
 .legend-marks { flex-direction:column; align-items:flex-start; }
 .legend-mark { max-width:calc(100vw - 24px); }
 .legend-text { max-width:calc(100vw - 24px); white-space:normal; }
-.toolbar { display:grid; grid-template-columns:1fr; align-items:stretch; }
+.toolbar { position:static; display:grid; grid-template-columns:1fr; align-items:stretch; width:100%; padding:10px; }
 .filter-control,.toolbar button,.multi-filter { width:100%; min-width:0; }
-.multi-options { position:static; width:100%; max-height:260px; box-shadow:none; }
+button,.multi-filter summary { min-height:44px; height:auto; line-height:1.25; white-space:normal; }
+.multi-options { position:static; width:100%; max-height:260px; box-shadow:none; border-top:1px solid var(--line); border-radius:6px; }
 .multi-option span { white-space:normal; overflow-wrap:break-word; }
 h2 { font-size:18px; }
 h3 { font-size:15px; }
 .table-wrap { overflow:visible; border:0; background:transparent; border-radius:0; }
 table,tbody { display:block; width:100%; min-width:0; }
 colgroup,thead { display:none; }
-tbody tr[data-report-row] { display:block; margin:10px 0; border:1px solid var(--line); border-radius:8px; background:#fff; overflow:hidden; }
+tbody tr[data-report-row] { display:block; width:100%; max-width:100%; margin:10px 0; border:1px solid var(--line); border-radius:8px; background:#fff; overflow:hidden; }
 tbody tr[data-report-row][style*="display: none"] { display:none !important; }
 th,td { border-bottom:1px solid var(--line); }
-td { display:grid; grid-template-columns:116px minmax(0,1fr); gap:8px; padding:8px 10px; min-width:0; }
+td { display:grid; grid-template-columns:minmax(96px,34%) minmax(0,1fr); gap:8px; padding:8px 10px; min-width:0; max-width:100%; }
 td:last-child { border-bottom:0; }
 td::before { content:attr(data-label); color:var(--muted); font-weight:700; }
 td.partner-cell { display:block; }
 td.partner-cell::before { content:"Партнёр"; display:block; margin-bottom:4px; color:var(--muted); font-weight:700; }
+.partner-name,.partner-url { max-width:100%; white-space:normal; overflow-wrap:anywhere; word-break:normal; }
 td.apikey { grid-template-columns:1fr; white-space:normal; font-size:12px; }
 td.apikey::before { display:block; margin-bottom:2px; font-size:14px; }
-.state-text { max-height:2.7em; }
+.apikey-value { display:block; max-width:100%; overflow-wrap:anywhere; word-break:break-word; }
+.state-text { max-height:2.7em; overflow-wrap:normal; word-break:normal; }
 tbody tr:hover { background:#fff; }
 }
 </style>
@@ -112,7 +119,7 @@ tbody tr:hover { background:#fff; }
 <section class="hero">
   <div class="eyebrow">Insapp · prod DB</div>
   <h1>ОСАГО — Бейджи</h1>
-  <div class="meta">Сформировано: 09.06.2026, 16:15:32 · Источник: активные партнеры, активные ApiKey, только SupportedProductTypesJson = [1].</div>
+  <div class="meta">Сформировано: 09.06.2026, 16:23:01 · Источник: активные партнеры, активные ApiKey, только SupportedProductTypesJson = [1].</div>
   <div class="metrics">
     <div class="metric"><span>ApiKey ОСАГО</span><b>142</b></div>
     <div class="metric"><span>Типов бейджей</span><b>5</b></div>
