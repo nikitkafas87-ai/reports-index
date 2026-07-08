@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ОСАГО МАКС — анализ failover на резервный хост</title>
+<style>
+:root{
+  --bg:#f4f7fb;
+  --panel:#ffffff;
+  --ink:#172033;
+  --muted:#637083;
+  --line:#dde6f0;
+  --blue:#2457c5;
+  --green:#168a5b;
+  --red:#c93c45;
+  --amber:#b67812;
+  --slate:#334155;
+  --soft-blue:#eaf1ff;
+  --soft-green:#e8f7ef;
+  --soft-red:#fdecec;
+  --soft-amber:#fff4dd;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;line-height:1.5}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+.wrap{max-width:1180px;margin:0 auto;padding:28px 18px 44px}
+.hero{background:#172033;color:white;border-radius:8px;padding:28px;display:grid;grid-template-columns:1.6fr .9fr;gap:24px;align-items:end}
+.hero h1{font-size:30px;line-height:1.15;margin:0 0 12px;font-weight:750}
+.hero p{margin:0;color:#c8d5e6;font-size:15px;max-width:760px}
+.hero .stamp{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.16);border-radius:8px;padding:16px}
+.stamp div{font-size:13px;color:#b7c5d8;margin-bottom:8px}
+.stamp strong{display:block;font-size:17px;color:white}
+.grid{display:grid;gap:16px}
+.metrics{grid-template-columns:repeat(4,minmax(0,1fr));margin-top:18px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:18px;box-shadow:0 1px 2px rgba(18,29,46,.04)}
+.metric-label{color:var(--muted);font-size:13px;margin-bottom:8px}
+.metric-value{font-size:28px;font-weight:760;letter-spacing:0}
+.metric-note{font-size:13px;color:var(--muted);margin-top:8px}
+.ok{color:var(--green)}.bad{color:var(--red)}.warn{color:var(--amber)}.blue{color:var(--blue)}
+.section{margin-top:24px}
+.section h2{font-size:21px;margin:0 0 12px}
+.section h3{font-size:16px;margin:0 0 10px}
+.split{grid-template-columns:1fr 1fr}
+.wide{grid-column:1/-1}
+.table{width:100%;border-collapse:collapse;background:white;border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.table th{background:#eef3f9;color:#233147;text-align:left;font-size:13px;padding:11px;border-bottom:1px solid var(--line)}
+.table td{padding:11px;border-bottom:1px solid #edf2f7;font-size:14px;vertical-align:top}
+.table tr:last-child td{border-bottom:none}
+.pill{display:inline-flex;align-items:center;gap:6px;border-radius:999px;padding:4px 9px;font-size:12px;font-weight:700;white-space:nowrap}
+.pill.ok{background:var(--soft-green);color:var(--green)}
+.pill.bad{background:var(--soft-red);color:var(--red)}
+.pill.warn{background:var(--soft-amber);color:var(--amber)}
+.pill.info{background:var(--soft-blue);color:var(--blue)}
+.bar-row{display:grid;grid-template-columns:190px 1fr 74px;gap:12px;align-items:center;margin:12px 0}
+.bar-track{height:14px;background:#edf2f7;border-radius:999px;overflow:hidden}
+.bar{height:100%;border-radius:999px}
+.bar.green{background:var(--green)}
+.bar.red{background:var(--red)}
+.bar.blue{background:var(--blue)}
+.bar.amber{background:var(--amber)}
+.callout{border-radius:8px;padding:16px;border:1px solid var(--line);background:white}
+.callout.ok{background:var(--soft-green);border-color:#b9e8cf}
+.callout.warn{background:var(--soft-amber);border-color:#f0d28f}
+.callout.bad{background:var(--soft-red);border-color:#f0b5ba}
+.callout strong{display:block;margin-bottom:6px}
+.timeline{display:grid;gap:10px}
+.event{display:grid;grid-template-columns:180px 1fr;gap:12px;border-left:3px solid var(--blue);background:white;border-radius:0 8px 8px 0;padding:12px 14px;border-top:1px solid var(--line);border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+.event time{font-size:13px;color:var(--muted)}
+code{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:#f1f5f9;border:1px solid #e2e8f0;border-radius:5px;padding:1px 5px;font-size:12px}
+details{background:white;border:1px solid var(--line);border-radius:8px;padding:13px 15px}
+summary{cursor:pointer;font-weight:700}
+pre{white-space:pre-wrap;overflow:auto;background:#111827;color:#dbeafe;border-radius:8px;padding:14px;font-size:12px}
+.foot{margin-top:24px;color:var(--muted);font-size:13px}
+@media(max-width:860px){
+  .hero,.split,.metrics{grid-template-columns:1fr}
+  .bar-row{grid-template-columns:1fr}
+  .event{grid-template-columns:1fr}
+}
+</style>
+</head>
+<body>
+<main class="wrap">
+  <section class="hero">
+    <div>
+      <h1>ОСАГО МАКС: анализ переключения на резервный хост</h1>
+      <p>Проверка PROD после релиза failover на резервный URL MAKC. Отчет показывает, сколько ошибок было бы без резервного хоста, сколько цепочек восстановлено после переключения и какие остаточные риски остались в логах.</p>
+    </div>
+    <div class="stamp">
+      <div>Среда и период анализа</div>
+      <strong>PROD, с 07.07.2026 19:18 MSK</strong>
+      <div style="margin-top:12px">Последняя первичная ошибка в выборке</div>
+      <strong>08.07.2026 10:20:19 MSK</strong>
+    </div>
+  </section>
+
+  <section class="grid metrics">
+    <div class="card">
+      <div class="metric-label">Ошибочных цепочек без backup</div>
+      <div class="metric-value bad">1028</div>
+      <div class="metric-note">primary host вернул non-200/null/ответ без <code>&lt;return&gt;</code></div>
+    </div>
+    <div class="card">
+      <div class="metric-label">Восстановлено backup-хостом</div>
+      <div class="metric-value ok">695</div>
+      <div class="metric-note">получен успешный SOAP <code>200 OK</code> с валидным <code>&lt;return&gt;</code></div>
+    </div>
+    <div class="card">
+      <div class="metric-label">Снижение ошибок</div>
+      <div class="metric-value ok">67.6%</div>
+      <div class="metric-note">по цепочкам запросов; по заявкам снижение составило 67.8%</div>
+    </div>
+    <div class="card">
+      <div class="metric-label">Осталось не восстановлено</div>
+      <div class="metric-value warn">333</div>
+      <div class="metric-note">backup тоже вернул <code>500/502/503</code> или некорректный ответ</div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Сравнение с предыдущим днем в таком же временном окне</h2>
+    <div class="grid split">
+      <div class="card">
+        <h3>Предыдущий день: 06.07.2026 19:18 → 07.07.2026 10:20 MSK</h3>
+        <table class="table">
+          <tbody>
+            <tr><td>Primary SOAP `200 OK`</td><td><strong>53493</strong> логов / 26737 заявок</td></tr>
+            <tr><td>Primary SOAP non-200</td><td><strong class="bad">3253</strong> логов</td></tr>
+            <tr><td>Affected цепочки <code>ApplicationId + TraceId</code></td><td><strong class="bad">3187</strong></td></tr>
+            <tr><td>Affected заявки</td><td><strong class="bad">3183</strong></td></tr>
+            <tr><td>Backup SOAP вызовы</td><td><strong>0</strong></td></tr>
+            <tr><td>Фактически невосстановленный хвост</td><td><strong class="bad">3187</strong> цепочек</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="card">
+        <h3>Текущий период после релиза: 07.07.2026 19:18 → 08.07.2026 10:20 MSK</h3>
+        <table class="table">
+          <tbody>
+            <tr><td>Primary SOAP `200 OK`</td><td><strong>55830</strong> логов / 28025 заявок</td></tr>
+            <tr><td>Primary SOAP non-200</td><td><strong class="warn">1035</strong> логов</td></tr>
+            <tr><td>Affected цепочки <code>ApplicationId + TraceId</code></td><td><strong class="warn">1028</strong></td></tr>
+            <tr><td>Affected заявки</td><td><strong class="warn">1004</strong></td></tr>
+            <tr><td>Backup SOAP вызовы</td><td><strong class="blue">1730</strong>, из них 1382 <code>200 OK</code></td></tr>
+            <tr><td>Фактически невосстановленный хвост</td><td><strong class="warn">333</strong> цепочки</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <div class="card" style="margin-top:16px">
+      <h3>Динамика</h3>
+      <div class="bar-row">
+        <div>Primary non-200 цепочки</div>
+        <div class="bar-track"><div class="bar amber" style="width:32.3%"></div></div>
+        <strong>-67.7%</strong>
+      </div>
+      <div class="bar-row">
+        <div>Невосстановленные цепочки</div>
+        <div class="bar-track"><div class="bar green" style="width:10.4%"></div></div>
+        <strong>-89.6%</strong>
+      </div>
+      <div class="bar-row">
+        <div>Успешные SOAP-ответы</div>
+        <div class="bar-track"><div class="bar blue" style="width:100%"></div></div>
+        <strong>+3719</strong>
+      </div>
+      <p class="metric-note">Сравнение показывает два эффекта одновременно: primary-хост в текущем окне падал реже, чем днем ранее, а добавленный резервный хост дополнительно сократил фактический невосстановленный хвост с 1028 до 333 цепочек. По сравнению с предыдущим днем итоговых невосстановленных цепочек стало меньше на 2854, то есть на 89.6%.</p>
+    </div>
+  </section>
+
+  <section class="section grid split">
+    <div class="card">
+      <h2>Что изменилось с резервным хостом</h2>
+      <div class="bar-row">
+        <div>Было бы ошибок</div>
+        <div class="bar-track"><div class="bar red" style="width:100%"></div></div>
+        <strong>1028</strong>
+      </div>
+      <div class="bar-row">
+        <div>Стало ошибок</div>
+        <div class="bar-track"><div class="bar amber" style="width:32.4%"></div></div>
+        <strong>333</strong>
+      </div>
+      <div class="bar-row">
+        <div>Избежали ошибок</div>
+        <div class="bar-track"><div class="bar green" style="width:67.6%"></div></div>
+        <strong>695</strong>
+      </div>
+      <p class="metric-note">Расчет выполнен по группам <code>ApplicationId + TraceId</code>: если primary host сломался и backup вернул валидный SOAP-ответ, цепочка считается спасенной.</p>
+    </div>
+    <div class="card">
+      <h2>Эффект по заявкам</h2>
+      <table class="table">
+        <thead><tr><th>Метрика</th><th>Значение</th><th>Вывод</th></tr></thead>
+        <tbody>
+          <tr><td>Заявки с primary failure</td><td><strong>1004</strong></td><td>именно эти заявки были бы затронуты без backup</td></tr>
+          <tr><td>Заявки восстановлены backup</td><td><strong class="ok">681</strong></td><td>получили успешный SOAP-ответ после переключения</td></tr>
+          <tr><td>Заявки не восстановлены</td><td><strong class="warn">331</strong></td><td>backup тоже был недоступен или вернул некорректный ответ</td></tr>
+          <tr><td>Backup не был вызван после primary failure</td><td><strong class="ok">0</strong></td><td>механика переключения отработала для всех affected-групп</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Разбор по типам primary-ошибок</h2>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Primary failure</th>
+          <th>Восстановлено backup 200 OK</th>
+          <th>Не восстановлено</th>
+          <th>Recovery rate</th>
+          <th>Комментарий</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><span class="pill bad">404 NotFound</span></td>
+          <td><strong class="ok">642</strong></td>
+          <td><strong class="warn">54</strong> backup 500</td>
+          <td><strong class="ok">92.2%</strong></td>
+          <td>Основная утренняя волна: резервный хост почти полностью компенсировал падение primary.</td>
+        </tr>
+        <tr>
+          <td><span class="pill bad">502 BadGateway</span></td>
+          <td><strong class="ok">38</strong></td>
+          <td><strong class="warn">270</strong> backup 502, <strong class="warn">9</strong> backup 503</td>
+          <td><strong class="warn">12.0%</strong></td>
+          <td>Раннее окно было хуже: backup часто падал теми же gateway/service ошибками.</td>
+        </tr>
+        <tr>
+          <td><span class="pill bad">503 ServiceUnavailable</span></td>
+          <td><strong class="ok">15</strong></td>
+          <td><strong>0</strong></td>
+          <td><strong class="ok">100%</strong></td>
+          <td>Для этого bucket переключение полностью восстановило цепочки.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="section grid split">
+    <div class="callout ok">
+      <strong>Подтверждено улучшение</strong>
+      Без резервного URL все <code>1028</code> affected-цепочек остались бы на ошибке primary-хоста. После релиза <code>695</code> из них получили успешный SOAP-ответ на backup-хосте, то есть ошибка была предотвращена в двух третях случаев.
+    </div>
+    <div class="callout warn">
+      <strong>Остаточный риск</strong>
+      Failover не делает интеграцию независимой от MAKC: если backup-хост тоже возвращает <code>500/502/503</code>, цепочка все равно остается ошибочной. Это наблюдалось на <code>333</code> цепочках.
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Host switching evidence</h2>
+    <div class="timeline">
+      <div class="event">
+        <time>07.07.2026 22:48:29</time>
+        <div>
+          <strong>Пример переключения после primary 503</strong><br>
+          ApplicationId <code>08dedc60-b81a-37e7-25c3-3e2c2c6cc558</code>, TraceId <code>800a96af-0802-a000-b63f-84710c7967bb</code>:
+          primary <code>uni2.makc.ru</code> вернул <code>503 - ServiceUnavailable</code>, затем backup <code>uni2docx.makc.ru</code> вернул <code>200 - OK</code> с валидным <code>&lt;return&gt;</code>.
+        </div>
+      </div>
+      <div class="event">
+        <time>08.07.2026 10:11:57</time>
+        <div>
+          <strong>Пример переключения после primary 404</strong><br>
+          ApplicationId <code>08dedcc0-3241-f8c4-25c3-3e2c2c228cea</code>, TraceId <code>8021ab43-0000-b400-b63f-84710c7967bb</code>:
+          primary <code>uni2.makc.ru</code> вернул <code>404 - NotFound</code>, backup <code>uni2docx.makc.ru</code> вернул <code>200 - OK</code> с KBM response, затем бизнес-ответ MAKC внутри <code>&lt;return&gt;</code>.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section grid split">
+    <div class="card">
+      <h2>Проверка ErrorLogs на failover-заявках</h2>
+      <table class="table">
+        <thead><tr><th>Показатель</th><th>Значение</th></tr></thead>
+        <tbody>
+          <tr><td>Failover-заявки</td><td><strong>1004</strong></td></tr>
+          <tr><td>Заявки с любыми ErrorLogs</td><td><strong>61</strong> / 1004 (6.1%)</td></tr>
+          <tr><td>Всего ErrorLogs</td><td><strong>67</strong></td></tr>
+          <tr><td>MAKS-related ErrorLogs</td><td><strong>12</strong> логов на 12 заявках</td></tr>
+          <tr><td>Прочие ErrorLogs</td><td><strong>55</strong> логов на 50 заявках</td></tr>
+        </tbody>
+      </table>
+      <p class="metric-note">Массового нового технического паттерна из-за переключения не найдено. Большая часть ошибок относится к другим интеграциям или общим data/mapper issues.</p>
+    </div>
+    <div class="card">
+      <h2>Проверка BusinessLogs на failover-заявках</h2>
+      <table class="table">
+        <thead><tr><th>MAKS-сообщение</th><th>Масштаб</th><th>Интерпретация</th></tr></thead>
+        <tbody>
+          <tr><td><code>[Maks] Интеграция недоступна для данного процесса</code></td><td>545 заявок</td><td>availability/plan message, не прямой failover-defect</td></tr>
+          <tr><td><code>Отказ по скорингу</code></td><td>471 заявка</td><td>штатный бизнес-отказ MAKC</td></tr>
+          <tr><td><code>Некорректный ответ МАКС</code></td><td>349 логов / 332 заявки</td><td>остаточный технический риск, совпадает с backup-side failures</td></tr>
+          <tr><td><code>MAKS has no Upsale plan</code></td><td>118 логов</td><td>планирование upsale, не ошибка переключения</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Сводка проверенных зон</h2>
+    <table class="table">
+      <thead><tr><th>Зона</th><th>Что проверялось</th><th>Результат</th></tr></thead>
+      <tbody>
+        <tr>
+          <td>Факт переключения</td>
+          <td>Наличие primary non-200 и последующего backup-host запроса в одной группе <code>ApplicationId + TraceId</code>.</td>
+          <td><span class="pill ok">PASS</span> Переключение подтверждено на реальном PROD-трафике.</td>
+        </tr>
+        <tr>
+          <td>Эффект на ошибки</td>
+          <td>Сравнение сценария без backup с фактическим результатом после backup.</td>
+          <td><span class="pill ok">PASS</span> Предотвращено 695 ошибочных цепочек / 681 affected-заявка.</td>
+        </tr>
+        <tr>
+          <td>Непокрытые случаи</td>
+          <td>Группы, где primary упал, backup был вызван, но успешного SOAP-ответа не получено.</td>
+          <td><span class="pill warn">RISK</span> 333 цепочки / 331 заявка остались ошибочными из-за backup 500/502/503.</td>
+        </tr>
+        <tr>
+          <td>BusinessLogs и ErrorLogs</td>
+          <td>Логи на когорте заявок, где переключался хост.</td>
+          <td><span class="pill ok">PASS</span> Массовых новых ErrorLogs от failover не найдено; MAKS residual warning выделен отдельно.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <section class="section">
+    <details>
+      <summary>Методика и SQL-смысл проверки</summary>
+      <p>Проверка выполнялась read-only по production log DB. Основной принцип: сравнить запросы MAKC SOAP по группам <code>ApplicationId + TraceId</code>, где primary host дал ошибку, а затем был вызван backup host.</p>
+      <pre>-- SQL intent, сокращенно:
+-- 1. Отобрать MaksLogs с Date &gt;= '2026-07-07T19:18:00+03:00'
+-- 2. Оставить SOAP XmlDocumExchangeWS URL.
+-- 3. Сгруппировать по ApplicationId, TraceId.
+-- 4. Primary failure = primary URL + ResponseCode not like '200%' / null / body without &lt;return&gt;.
+-- 5. Recovered = после primary failure есть backup URL + 200 OK + body with &lt;return&gt;.
+-- 6. Проверить BusinessLogs и ErrorLogs по distinct ApplicationId из failover cohort.</pre>
+      <p>Cross-DB join из Core к <code>InsappLogProd.dbo.MaksLogs</code> был недоступен из-за <code>Invalid object name</code>, поэтому детальный статусный срез по Core для failover cohort в этот отчет не включен. Логовый анализ выполнен по <code>MaksLogs</code>, <code>BusinessLogs</code>, <code>ErrorLogs</code>.</p>
+    </details>
+  </section>
+
+  <section class="section">
+    <div class="callout ok">
+      <strong>Финальный вывод</strong>
+      Доработка с резервным хостом улучшила ситуацию: при ошибках primary MAKC примерно две трети affected-цепочек были восстановлены успешным ответом backup-хоста. Механика переключения работает. Оставшийся дефектный хвост связан не с отсутствием переключения, а с нестабильностью самого backup-хоста в отдельных временных окнах.
+    </div>
+  </section>
+
+  <p class="foot">
+    QA journal: <code>journals/2026-07-07-dev-task-08dedc3f-code-check/log.md</code>. Локальный журнал указан как QA-only контекст для ретеста и восстановления проверок.
+  </p>
+</main>
+</body>
+</html>
